@@ -1,0 +1,117 @@
+<div class="page">
+  <div class="container">
+    <button class="back-link" (click)="cancel()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+      返回
+    </button>
+
+    <h1 class="page-title">新增旅程</h1>
+    <p class="page-sub">記錄你即將展開的探索</p>
+
+    <form class="form-card" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label class="form-label">旅程名稱 <span class="required">*</span></label>
+        <input
+          type="text"
+          class="form-input"
+          [(ngModel)]="trip.title"
+          name="title"
+          placeholder="例如：東京賞櫻之旅"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">目的地 <span class="required">*</span></label>
+        <input
+          type="text"
+          class="form-input"
+          [(ngModel)]="trip.destination"
+          name="destination"
+          placeholder="例如：日本東京"
+          required
+        >
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">出發日期 <span class="required">*</span></label>
+          <input
+            type="date"
+            class="form-input"
+            [(ngModel)]="trip.startDate"
+            name="startDate"
+            required
+          >
+        </div>
+        <div class="form-group">
+          <label class="form-label">返回日期 <span class="required">*</span></label>
+          <input
+            type="date"
+            class="form-input"
+            [(ngModel)]="trip.endDate"
+            name="endDate"
+            required
+          >
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">預算（選填）</label>
+          <input
+            type="number"
+            class="form-input"
+            [(ngModel)]="trip.budget"
+            name="budget"
+            placeholder="0"
+            min="0"
+          >
+        </div>
+        <div class="form-group">
+          <label class="form-label">貨幣</label>
+          <select class="form-input" [(ngModel)]="trip.currency" name="currency">
+            <option value="TWD">TWD 台幣</option>
+            <option value="JPY">JPY 日圓</option>
+            <option value="USD">USD 美元</option>
+            <option value="EUR">EUR 歐元</option>
+            <option value="GBP">GBP 英鎊</option>
+            <option value="KRW">KRW 韓元</option>
+            <option value="HKD">HKD 港幣</option>
+            <option value="AUD">AUD 澳幣</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">封面圖片 URL（選填）</label>
+        <input
+          type="url"
+          class="form-input"
+          [(ngModel)]="trip.imageUrl"
+          name="imageUrl"
+          placeholder="https://..."
+        >
+        <p class="form-hint">留空時將自動使用漸層色彩作為封面</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">備注（選填）</label>
+        <textarea
+          class="form-input form-textarea"
+          [(ngModel)]="trip.description"
+          name="description"
+          rows="3"
+          placeholder="記錄你的旅程規劃和期待..."
+        ></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="cancel()">取消</button>
+        <button type="submit" class="btn-primary">建立旅程</button>
+      </div>
+    </form>
+  </div>
+</div>

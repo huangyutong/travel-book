@@ -1,0 +1,113 @@
+/* ── Liquid blob layer ── */
+.liquid-blobs {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.liquid-ripple {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: var(--ripple-opacity, 0.18);
+  transform: translate3d(var(--push-x, 0), var(--push-y, 0), 0);
+  transition: opacity 0.28s ease, transform 0.22s ease-out;
+  will-change: opacity, transform;
+}
+
+.liquid-ripple::before,
+.liquid-ripple::after {
+  content: "";
+  position: absolute;
+  inset: -8%;
+}
+
+.liquid-ripple::before {
+  background:
+    radial-gradient(circle at var(--mx, 50vw) var(--my, 50vh),
+      rgba(255, 255, 255, 0.26) 0 2px,
+      rgba(126, 200, 255, 0.18) 8%,
+      rgba(240, 122, 90, 0.10) 17%,
+      transparent 31%),
+    radial-gradient(circle at calc(var(--mx, 50vw) - 70px) calc(var(--my, 50vh) - 44px),
+      rgba(66, 200, 184, 0.14),
+      transparent 24%);
+  filter: blur(16px);
+  mix-blend-mode: screen;
+}
+
+.liquid-ripple::after {
+  backdrop-filter: blur(5px) saturate(1.28);
+  -webkit-backdrop-filter: blur(5px) saturate(1.28);
+  mask-image: radial-gradient(circle at var(--mx, 50vw) var(--my, 50vh),
+    rgba(0, 0, 0, 0.95) 0 52px,
+    rgba(0, 0, 0, 0.46) 108px,
+    transparent 210px);
+  -webkit-mask-image: radial-gradient(circle at var(--mx, 50vw) var(--my, 50vh),
+    rgba(0, 0, 0, 0.95) 0 52px,
+    rgba(0, 0, 0, 0.46) 108px,
+    transparent 210px);
+  opacity: 0.5;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  animation: blobDrift 28s ease-in-out infinite;
+  will-change: transform;
+}
+
+.blob-coral {
+  width: min(56vw, 680px);
+  height: min(56vw, 680px);
+  background: var(--blob-coral);
+  top: -15%;
+  left: -12%;
+  animation-duration: 24s;
+}
+
+.blob-teal {
+  width: min(48vw, 580px);
+  height: min(48vw, 580px);
+  background: var(--blob-teal);
+  bottom: -14%;
+  right: -14%;
+  animation-duration: 31s;
+  animation-delay: -10s;
+}
+
+.blob-amber {
+  width: min(36vw, 460px);
+  height: min(36vw, 460px);
+  background: var(--blob-amber);
+  top: 38%;
+  left: 38%;
+  animation-duration: 36s;
+  animation-delay: -18s;
+}
+
+@keyframes blobDrift {
+  0%, 100% { transform: translate(0, 0)       scale(1);    }
+  20%       { transform: translate(6vw, -5vw)  scale(1.07); }
+  40%       { transform: translate(-4vw, 7vw)  scale(0.93); }
+  60%       { transform: translate(8vw, 4vw)   scale(1.05); }
+  80%       { transform: translate(-6vw, -6vw) scale(0.96); }
+}
+
+/* ── Mobile: smaller blobs ── */
+@media (max-width: 640px) {
+  .blob { filter: blur(60px); }
+  .blob-coral { width: 80vw; height: 80vw; top: -20%; left: -20%; }
+  .blob-teal  { width: 70vw; height: 70vw; }
+  .blob-amber { width: 55vw; height: 55vw; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .liquid-ripple {
+    display: none;
+  }
+}

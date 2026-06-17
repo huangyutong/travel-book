@@ -1,0 +1,508 @@
+<div class="page" *ngIf="trip">
+  <!-- Hero -->
+  <div class="hero">
+    <div
+      class="hero-bg"
+      [style.background-image]="trip.imageUrl ? 'url(' + trip.imageUrl + ')' : ''"
+      [style.background]="!trip.imageUrl ? getGradient(trip.id) : ''"
+    ></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-top-bar">
+      <button class="hero-back-btn" (click)="goBack()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
+        返回
+      </button>
+    </div>
+    <div class="hero-content">
+      <span class="hero-destination">{{ trip.destination }}</span>
+      <h1 class="hero-title">{{ trip.title }}</h1>
+      <div class="hero-meta">
+        <span>{{ formatFullDate(trip.startDate) }}</span>
+        <span class="hero-meta-dot">·</span>
+        <span>{{ formatFullDate(trip.endDate) }}</span>
+        <span class="hero-meta-dot">·</span>
+        <span>{{ getDuration(trip.startDate, trip.endDate) }} 天</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-number">{{ trip.activities.length }}</span>
+      <span class="stat-label">個活動</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-number">{{ getCompletedCount() }}</span>
+      <span class="stat-label">已完成</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-number">{{ trip.expenses.length }}</span>
+      <span class="stat-label">筆花費</span>
+    </div>
+    <div class="stat-divider" *ngIf="trip.budget"></div>
+    <div class="stat-item" *ngIf="trip.budget">
+      <span class="stat-number">{{ getTotalSpent() | number:'1.0-0' }}</span>
+      <span class="stat-label">/ {{ trip.budget | number:'1.0-0' }} 預算</span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-container">
+    <div class="tabs">
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'itinerary'"
+        (click)="activeTab = 'itinerary'"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        行程
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === 'expenses'"
+        (click)="activeTab = 'expenses'"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+        花費
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- ===== ITINERARY TAB ===== -->
+    <div class="tab-content" *ngIf="activeTab === 'itinerary'">
+      <div class="section-header">
+        <h2 class="section-title">行程規劃</h2>
+        <button class="btn-add" (click)="toggleAddActivity()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          {{ showAddActivity ? '取消' : '新增活動' }}
+        </button>
+      </div>
+
+      <!-- Date strip -->
+      <div class="date-strip" #dateStrip *ngIf="allDays.length > 0" [class.date-strip--scroll]="allDays.length > 4">
+        <button
+          class="date-tab"
+          *ngFor="let day of allDays; let i = index"
+          [class.active]="isSelectedDay(day)"
+          (click)="selectDay(day)"
+        >
+          <span class="tab-day-num">D{{ i + 1 }}</span>
+          <span class="tab-date">{{ formatTabDate(day) }}</span>
+          <span class="tab-weekday">{{ formatTabWeekday(day) }}</span>
+          <span class="tab-dot" *ngIf="hasActivitiesOnDay(day)"></span>
+        </button>
+      </div>
+
+      <!-- Add Activity Form -->
+      <div class="form-panel" *ngIf="showAddActivity">
+        <h3 class="form-panel-title">新增活動</h3>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label class="form-label">活動名稱 *</label>
+            <input type="text" class="form-input" [(ngModel)]="newActivity.title" placeholder="例如：參觀淺草寺">
+          </div>
+          <div class="form-group">
+            <label class="form-label">日期 *</label>
+            <input type="date" class="form-input" [(ngModel)]="newActivity.date">
+          </div>
+          <div class="form-group">
+            <label class="form-label">時間</label>
+            <input type="time" class="form-input" [(ngModel)]="newActivity.time">
+          </div>
+          <div class="form-group">
+            <label class="form-label">地點</label>
+            <input type="text" class="form-input"
+              [(ngModel)]="newActivity.location"
+              (input)="onLocationInput(newActivity.location || '')"
+              placeholder="地址或地名">
+            <!-- Location preview map -->
+            <div class="location-preview" *ngIf="newActivity.location">
+              <div class="preview-loading" *ngIf="locationPreviewLoading">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin">
+                  <path d="M21 12a9 9 0 0 0-9-9" />
+                </svg>
+                定位中...
+              </div>
+              <div id="location-preview-map" class="preview-map" *ngIf="locationPreviewCoords && !locationPreviewLoading"></div>
+              <div class="preview-no-result" *ngIf="!locationPreviewCoords && !locationPreviewLoading && newActivity.location">
+                找不到此地點
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">類別</label>
+            <select class="form-input" [(ngModel)]="newActivity.category">
+              <option value="attraction">景點</option>
+              <option value="food">美食</option>
+              <option value="transport">交通</option>
+              <option value="accommodation">住宿</option>
+              <option value="other">其他</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">備注</label>
+            <textarea class="form-input form-textarea" [(ngModel)]="newActivity.description" placeholder="補充說明..." rows="2"></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-save" (click)="addActivity()">儲存活動</button>
+        </div>
+      </div>
+
+      <!-- Selected day header -->
+      <div class="selected-day-header" *ngIf="selectedDay">
+        <div class="day-badge">Day {{ getDayNumber(selectedDay) }}</div>
+        <div class="day-info">
+          <div class="day-date">{{ formatDayHeader(selectedDay) }}</div>
+          <div class="day-route" *ngIf="getDayLocations(getActivitiesForSelectedDay()).length > 0">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            {{ getDayLocations(getActivitiesForSelectedDay()).join(' → ') }}
+          </div>
+        </div>
+        <div class="day-map-actions"
+             *ngIf="getActivitiesForSelectedDay().length > 1 || getDayLocations(getActivitiesForSelectedDay()).length > 0">
+          <button class="btn-auto-sort"
+                  *ngIf="getActivitiesForSelectedDay().length > 1"
+                  (click)="autoSortActivities()"
+                  [disabled]="sortingInProgress"
+                  title="依距離與時間自動排序">
+            <svg *ngIf="!sortingInProgress" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M3 6h18M6 12h12M9 18h6"/>
+            </svg>
+            <svg *ngIf="sortingInProgress" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin">
+              <path d="M21 12a9 9 0 0 0-9-9"/>
+            </svg>
+            {{ sortingInProgress ? '定位中...' : '智慧排序' }}
+          </button>
+          <button class="btn-route-map" (click)="toggleDayMap()" [class.active]="showDayMap"
+                  *ngIf="getDayLocations(getActivitiesForSelectedDay()).length > 0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+              <line x1="9" y1="3" x2="9" y2="18"/>
+              <line x1="15" y1="6" x2="15" y2="21"/>
+            </svg>
+            {{ showDayMap ? '收起地圖' : '查看路線地圖' }}
+          </button>
+          <a class="btn-gmaps" [href]="getDayGoogleMapsRoute()" target="_blank" rel="noopener noreferrer"
+             *ngIf="getDayGoogleMapsRoute()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Google Maps 導航
+          </a>
+        </div>
+      </div>
+
+      <!-- Day route map (below date, above activities) -->
+      <div class="day-map-wrapper" *ngIf="showDayMap">
+        <div class="day-map-loading" *ngIf="dayMapLoading">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin">
+            <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" opacity=".25"/>
+            <path d="M21 12a9 9 0 0 0-9-9"/>
+          </svg>
+          正在定位各地點...
+        </div>
+        <div id="day-route-map" class="day-route-map" [style.display]="dayMapLoading ? 'none' : 'block'"></div>
+      </div>
+
+      <!-- Activity list for selected day -->
+      <div class="activity-list"
+           *ngIf="getActivitiesForSelectedDay().length > 0; else noActivitiesDay"
+           cdkDropList
+           (cdkDropListDropped)="onActivityDrop($event)">
+        <div
+          class="activity-card"
+          *ngFor="let activity of getActivitiesForSelectedDay()"
+          [class.completed]="activity.completed"
+          cdkDrag
+        >
+          <!-- Drag placeholder -->
+          <div class="drag-placeholder" *cdkDragPlaceholder></div>
+
+          <!-- View mode -->
+          <div class="activity-view" *ngIf="editingActivity?.id !== activity.id">
+            <div class="drag-handle" cdkDragHandle title="拖曳排序">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="9" y1="6" x2="9" y2="6"/><line x1="15" y1="6" x2="15" y2="6"/>
+                <line x1="9" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="15" y2="12"/>
+                <line x1="9" y1="18" x2="9" y2="18"/><line x1="15" y1="18" x2="15" y2="18"/>
+              </svg>
+            </div>
+            <div class="activity-left">
+              <label class="checkbox-wrap">
+                <input type="checkbox" [checked]="activity.completed" (change)="toggleComplete(activity.id)">
+                <span class="checkmark"></span>
+              </label>
+              <div class="activity-cat-dot" [class]="'cat-' + activity.category"></div>
+            </div>
+            <div class="activity-body">
+              <div class="activity-top-row">
+                <span class="activity-title">{{ activity.title }}</span>
+                <span class="activity-time" *ngIf="activity.time">{{ activity.time }}</span>
+              </div>
+              <div class="activity-detail-row" *ngIf="activity.location">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <a class="location-link"
+                   [href]="getGoogleMapsUrl(activity.location)"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                  {{ activity.location }}
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+                    <polyline points="15 3 21 3 21 9"/>
+                    <line x1="10" y1="14" x2="21" y2="3"/>
+                  </svg>
+                </a>
+              </div>
+              <div class="activity-desc" *ngIf="activity.description">{{ activity.description }}</div>
+            </div>
+            <div class="activity-actions">
+              <button class="icon-btn" (click)="startEditActivity(activity)" title="編輯">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </button>
+              <button class="icon-btn danger" (click)="deleteActivity(activity.id)" title="刪除">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6l-1 14H6L5 6"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Edit mode -->
+          <div class="activity-edit-form" *ngIf="editingActivity?.id === activity.id">
+            <div class="form-grid">
+              <div class="form-group full">
+                <label class="form-label">活動名稱</label>
+                <input type="text" class="form-input" [(ngModel)]="editingActivity!.title">
+              </div>
+              <div class="form-group">
+                <label class="form-label">日期</label>
+                <input type="date" class="form-input"
+                  [value]="editingActivity!.date | date:'yyyy-MM-dd'"
+                  (change)="editingActivity!.date = toDate($any($event.target).value)">
+              </div>
+              <div class="form-group">
+                <label class="form-label">時間</label>
+                <input type="time" class="form-input" [(ngModel)]="editingActivity!.time">
+              </div>
+              <div class="form-group">
+                <label class="form-label">地點</label>
+                <input type="text" class="form-input"
+                  [(ngModel)]="editingActivity!.location"
+                  (input)="onLocationInput(editingActivity!.location || '')">
+                <div class="location-preview" *ngIf="editingActivity!.location">
+                  <div class="preview-loading" *ngIf="locationPreviewLoading">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M21 12a9 9 0 0 0-9-9"/></svg>
+                    定位中...
+                  </div>
+                  <div id="location-preview-map" class="preview-map" *ngIf="locationPreviewCoords && !locationPreviewLoading"></div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">類別</label>
+                <select class="form-input" [(ngModel)]="editingActivity!.category">
+                  <option value="attraction">景點</option>
+                  <option value="food">美食</option>
+                  <option value="transport">交通</option>
+                  <option value="accommodation">住宿</option>
+                  <option value="other">其他</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label class="form-label">備注</label>
+                <textarea class="form-input form-textarea" [(ngModel)]="editingActivity!.description" rows="2"></textarea>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-cancel" (click)="cancelEditActivity()">取消</button>
+              <button class="btn-save" (click)="saveActivityEdit()">儲存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noActivitiesDay>
+        <div class="empty-section" *ngIf="!showAddActivity">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <p>這天還沒有活動</p>
+          <button class="btn-text" (click)="toggleAddActivity()">新增活動</button>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- ===== EXPENSES TAB ===== -->
+    <div class="tab-content" *ngIf="activeTab === 'expenses'">
+      <!-- Budget overview -->
+      <div class="budget-card" *ngIf="trip.budget">
+        <div class="budget-top">
+          <div>
+            <div class="budget-label">預算使用</div>
+            <div class="budget-numbers">
+              <span class="budget-spent">{{ getTotalSpent() | number:'1.0-0' }}</span>
+              <span class="budget-total"> / {{ trip.budget | number:'1.0-0' }}</span>
+            </div>
+          </div>
+          <div class="budget-percent" [class.over]="getBudgetPercent() > 100">
+            {{ getBudgetPercent() | number:'1.0-0' }}%
+          </div>
+        </div>
+        <div class="budget-bar-track">
+          <div
+            class="budget-bar-fill"
+            [class.over]="getBudgetPercent() > 100"
+            [style.width.%]="getBudgetPercent() > 100 ? 100 : getBudgetPercent()"
+          ></div>
+        </div>
+        <div class="budget-remaining">
+          剩餘 {{ trip.budget - getTotalSpent() | number:'1.0-0' }} 元
+        </div>
+      </div>
+
+      <!-- Category breakdown -->
+      <div class="category-breakdown" *ngIf="trip.expenses && trip.expenses.length > 0">
+        <h3 class="breakdown-title">分類統計</h3>
+        <div class="cat-rows">
+          <div class="cat-row" *ngFor="let cat of getExpenseCategories()">
+            <div class="cat-dot" [class]="'cat-' + cat.key"></div>
+            <span class="cat-name">{{ cat.label }}</span>
+            <div class="cat-bar-track">
+              <div class="cat-bar-fill" [class]="'cat-bar-' + cat.key" [style.width.%]="cat.percent"></div>
+            </div>
+            <span class="cat-amount">{{ cat.total | number:'1.0-0' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add expense -->
+      <div class="section-header">
+        <h2 class="section-title">花費明細</h2>
+        <button class="btn-add" (click)="toggleAddExpense()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          {{ showAddExpense ? '取消' : '新增花費' }}
+        </button>
+      </div>
+
+      <!-- Add Expense Form -->
+      <div class="form-panel" *ngIf="showAddExpense">
+        <h3 class="form-panel-title">新增花費</h3>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label class="form-label">名稱 *</label>
+            <input type="text" class="form-input" [(ngModel)]="newExpense.name" placeholder="例如：午餐">
+          </div>
+          <div class="form-group">
+            <label class="form-label">金額 *</label>
+            <input type="number" class="form-input" [(ngModel)]="newExpense.amount" placeholder="0" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">幣別</label>
+            <select class="form-input" [(ngModel)]="newExpense.currency">
+              <option value="TWD">TWD</option>
+              <option value="JPY">JPY</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="GBP">GBP</option>
+              <option value="KRW">KRW</option>
+              <option value="HKD">HKD</option>
+              <option value="AUD">AUD</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">類別</label>
+            <select class="form-input" [(ngModel)]="newExpense.category">
+              <option value="transport">交通</option>
+              <option value="food">餐飲</option>
+              <option value="accommodation">住宿</option>
+              <option value="ticket">門票</option>
+              <option value="shopping">購物</option>
+              <option value="other">其他</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">日期 *</label>
+            <input type="date" class="form-input" [(ngModel)]="newExpense.date">
+          </div>
+          <div class="form-group full">
+            <label class="form-label">備注</label>
+            <input type="text" class="form-input" [(ngModel)]="newExpense.notes" placeholder="選填">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-save" (click)="addExpense()">儲存花費</button>
+        </div>
+      </div>
+
+      <!-- Expense list -->
+      <div class="expense-list" *ngIf="trip.expenses && trip.expenses.length > 0; else noExpenses">
+        <div class="expense-item" *ngFor="let exp of getSortedExpenses()">
+          <div class="expense-cat-dot" [class]="'cat-' + exp.category"></div>
+          <div class="expense-body">
+            <div class="expense-name">{{ exp.name }}</div>
+            <div class="expense-meta">
+              <span class="expense-cat-label">{{ getCategoryLabel(exp.category) }}</span>
+              <span class="expense-date">{{ formatShortDate(exp.date) }}</span>
+              <span class="expense-notes" *ngIf="exp.notes">{{ exp.notes }}</span>
+            </div>
+          </div>
+          <div class="expense-amount">
+            <div class="amount-value">{{ exp.amount | number:'1.0-0' }}</div>
+            <div class="amount-currency">{{ exp.currency }}</div>
+          </div>
+          <button class="icon-btn danger" (click)="deleteExpense(exp.id)" title="刪除">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6l-1 14H6L5 6"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <ng-template #noExpenses>
+        <div class="empty-section" *ngIf="!showAddExpense">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+          <p>尚未記錄任何花費</p>
+          <button class="btn-text" (click)="toggleAddExpense()">新增第一筆花費</button>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

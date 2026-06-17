@@ -1,0 +1,227 @@
+/* ─── 晨曦星雲 / Dawn Nebula — Light Mode (Default) ─── */
+:root {
+  /* ── Brand — Star Nebula Purple ── */
+  --primary500:   #7C3AED;
+  --primary300:   #A78BFA;
+  --primary700:   #5B21B6;
+  --secondary500: #38BDF8;
+  --secondary300: #22D3EE;
+  --secondary-light: rgba(56, 189, 248, 0.12);
+  --tertiary:        #C084FC;
+  --tertiary-light:  rgba(192, 132, 252, 0.14);
+
+  /* ── Neutrals ── */
+  --netural100:   #F8FAFF;
+  --neutral-1000: #1E1B4B;
+  --netural:      var(--neutral-1000);
+  --netrual:      var(--netural);
+  --netural1000:  var(--neutral-1000);
+  --neutral:      var(--neutral-1000);
+
+  /* ── Globe ── */
+  --globe-ocean: #BAE6FD;
+
+  /* ── Glass — dawn frosted ── */
+  --glass:           rgba(255, 255, 255, 0.72);
+  --glass-raised:    rgba(255, 255, 255, 0.94);
+  --glass-input:     #FFFFFF;
+  --glass-border:    rgba(124, 58, 237, 0.14);
+  --glass-border-em: rgba(124, 58, 237, 0.28);
+
+  /* ── Blobs ── */
+  --blob-coral: rgba(240, 171, 252, 0.28);
+  --blob-teal:  rgba(56,  189, 248, 0.22);
+  --blob-amber: rgba(167, 139, 250, 0.25);
+
+  /* ── Surfaces ── */
+  --white:  #FFFFFF;
+  --cream:  #F8FAFF;
+  --border: #DDD6FE;
+
+  /* ── Text ── */
+  --text-primary:   #1E1B4B;
+  --text-secondary: #334155;
+  --text-muted:     #64748B;
+
+  /* ── Shadows — soft nebula glow ── */
+  --shadow-sm: 0 4px 12px rgba(124, 58, 237, 0.07);
+  --shadow-md: 0 8px 28px rgba(124, 58, 237, 0.09);
+  --shadow-lg: 0 18px 50px rgba(124, 58, 237, 0.10);
+
+  /* ── Radius ── */
+  --radius-sm: 10px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+
+  /* ── Category colors ── */
+  --cat-transport:     #38BDF8;
+  --cat-food:          #FBBF24;
+  --cat-accommodation: #34D399;
+  --cat-ticket:        #A78BFA;
+  --cat-shopping:      #F472B6;
+  --cat-other:         #94A3B8;
+  --cat-attraction:    #FB7185;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--cream);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input, textarea, select {
+  font-family: inherit;
+}
+
+h1, h2, h3 {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-weight: 400;
+}
+
+
+
+/* Smooth theme transition on key surfaces */
+body {
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ===== Global Keyframes ===== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+  0%   { opacity: 0; transform: scale(0.88) translateY(8px); }
+  70%  { transform: scale(1.03) translateY(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+
+@keyframes growX {
+  from { transform: scaleX(0); transform-origin: left; }
+  to   { transform: scaleX(1); transform-origin: left; }
+}
+
+@keyframes kenBurns {
+  from { transform: scale(1)    translateX(0)    translateY(0); }
+  to   { transform: scale(1.09) translateX(1.5%) translateY(-1%); }
+}
+
+@keyframes tabFade {
+  from { opacity: 0; transform: translateX(12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes iconSpinIn {
+  from { opacity: 0; transform: rotate(-120deg) scale(0.5); }
+  to   { opacity: 1; transform: rotate(0deg) scale(1); }
+}
+
+@keyframes statPop {
+  0%   { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Page entrance used by all route components */
+.page-enter {
+  animation: fadeIn 0.35s ease-out;
+}
+
+/* ── Mobile global resets ── */
+@media (max-width: 640px) {
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  button, a { -webkit-tap-highlight-color: transparent; }
+}
+
+/* ═══════════════════════════════════════════
+   LIQUID GRADIENT BACKGROUNDS
+   ═══════════════════════════════════════════ */
+
+/* ── 晨曦星雲 — dawn nebula (light, default) ── */
+body {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(167, 139, 250, 0.35), transparent 32%),
+    radial-gradient(circle at 80% 12%, rgba(56,  189, 248, 0.24), transparent 30%),
+    radial-gradient(circle at 50% 85%, rgba(240, 171, 252, 0.22), transparent 36%),
+    linear-gradient(135deg, #F8FAFF 0%, #F3F0FF 48%, #EEF6FF 100%);
+  background-attachment: fixed;
+}
+
+/* ── 夢幻外太空 — deep nebula (dark toggle) ── */
+body.dark {
+  /* override every CSS variable to dark values */
+  --primary500:   #8B5CF6;
+  --primary300:   #A78BFA;
+  --primary700:   #6D28D9;
+  --secondary500: #38BDF8;
+  --secondary300: #22D3EE;
+  --secondary-light: rgba(56, 189, 248, 0.15);
+  --tertiary:        #F0ABFC;
+  --tertiary-light:  rgba(240, 171, 252, 0.13);
+  --netural100:   #F8FAFC;
+  --neutral-1000: #080A1F;
+  --globe-ocean: #0A1628;
+  --glass:           rgba(33, 26, 69, 0.55);
+  --glass-raised:    rgba(33, 26, 69, 0.84);
+  --glass-input:     rgba(139, 92, 246, 0.08);
+  --glass-border:    rgba(167, 139, 250, 0.25);
+  --glass-border-em: rgba(167, 139, 250, 0.45);
+  --blob-coral: rgba(240, 171, 252, 0.32);
+  --blob-teal:  rgba(56,  189, 248, 0.22);
+  --blob-amber: rgba(139, 92,  246, 0.28);
+  --white:  rgba(33, 26, 69, 0.52);
+  --cream:  #080A1F;
+  --border: rgba(167, 139, 250, 0.25);
+  --text-primary:   #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted:     #94A3B8;
+  --shadow-sm: 0 4px 16px rgba(5, 7, 22, 0.42);
+  --shadow-md: 0 8px 32px rgba(5, 7, 22, 0.52);
+  --shadow-lg: 0 20px 60px rgba(5, 7, 22, 0.58);
+
+  background:
+    radial-gradient(circle at 15% 25%, rgba(109, 40, 217, 0.40), transparent 32%),
+    radial-gradient(circle at 85% 8%,  rgba(34,  211, 238, 0.22), transparent 26%),
+    radial-gradient(circle at 45% 85%, rgba(240, 171, 252, 0.22), transparent 38%),
+    linear-gradient(135deg, #050714 0%, #0F0C26 45%, #1A1040 100%);
+  background-attachment: fixed;
+}
