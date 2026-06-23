@@ -79,10 +79,6 @@ export class TripService implements OnDestroy {
     this.tripsSubject.next(fn(this.tripsSubject.value));
   }
 
-  getTrips(): Trip[] {
-    return this.tripsSubject.value;
-  }
-
   getTripById(id: string): Trip | undefined {
     return this.tripsSubject.value.find(t => t.id === id);
   }
@@ -270,22 +266,6 @@ export class TripService implements OnDestroy {
     this.updateTrips(trips => trips.map(t =>
       t.id === tripId ? { ...t, expenses: [...t.expenses, newExpense] } : t
     ));
-  }
-
-  async updateExpense(tripId: string, expenseId: string, updates: Partial<Expense>): Promise<void> {
-    const patch: Record<string, unknown> = {};
-    if (updates.name !== undefined) patch['name'] = updates.name;
-    if (updates.amount !== undefined) patch['amount'] = updates.amount;
-    if (updates.currency !== undefined) patch['currency'] = updates.currency;
-    if (updates.category !== undefined) patch['category'] = updates.category;
-    if (updates.date !== undefined) patch['date'] = this.toDateStr(new Date(updates.date));
-    if (updates.notes !== undefined) patch['notes'] = updates.notes;
-
-    await this.supabase.client.from('expenses').update(patch).eq('id', expenseId);
-    this.updateTrips(trips => trips.map(t => {
-      if (t.id !== tripId) return t;
-      return { ...t, expenses: t.expenses.map(e => e.id === expenseId ? { ...e, ...updates } : e) };
-    }));
   }
 
   async deleteExpense(tripId: string, expenseId: string): Promise<void> {

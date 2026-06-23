@@ -469,12 +469,6 @@ export class TripListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.labelTimer = setTimeout(() => { this.countryLabel = ''; }, 2500);
   }
 
-  flyTo(trip: Trip): void {
-    if (!this.globe || !trip.lat || !trip.lng) return;
-    this.globe.controls().autoRotate = false;
-    this.globe.pointOfView({ lat: trip.lat, lng: trip.lng, altitude: 1.5 }, 1200);
-  }
-
   viewTrip(tripId: string): void {
     this.router.navigate(['/trip', tripId]);
   }

@@ -160,10 +160,6 @@ export class TripDetailComponent implements OnInit, OnDestroy {
     this.locationPreviewCoords = null;
   }
 
-  clearLocationPreview(): void {
-    this.destroyPreviewMap();
-  }
-
   /* ---------- Day route map ---------- */
 
   async toggleDayMap(): Promise<void> {
