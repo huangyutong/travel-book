@@ -33,6 +33,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Create environment file
+        run: |
+          cat > src/environments/environment.ts << 'EOF'
+          export const environment = {
+            production: true,
+            supabaseUrl: '${{ secrets.SUPABASE_URL }}',
+            supabaseAnonKey: '${{ secrets.SUPABASE_ANON_KEY }}',
+            mapboxToken: '${{ secrets.MAPBOX_TOKEN }}'
+          };
+          EOF
+
       - name: Build
         run: pnpm exec ng build --base-href /travel-book/
 
