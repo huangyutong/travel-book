@@ -33,9 +33,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Create environment file
+      - name: Create environment files
         run: |
           cat > src/environments/environment.ts << 'EOF'
+          export const environment = {
+            production: false,
+            supabaseUrl: '${{ secrets.SUPABASE_URL }}',
+            supabaseAnonKey: '${{ secrets.SUPABASE_ANON_KEY }}',
+            mapboxToken: '${{ secrets.MAPBOX_TOKEN }}'
+          };
+          EOF
+          cat > src/environments/environment.prod.ts << 'EOF'
           export const environment = {
             production: true,
             supabaseUrl: '${{ secrets.SUPABASE_URL }}',
