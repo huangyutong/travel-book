@@ -37,7 +37,7 @@ export class AuthService {
   async signInWithGoogle() {
     return this.supabaseService.client.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin }
+      options: { redirectTo: window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/') }
     });
   }
 
